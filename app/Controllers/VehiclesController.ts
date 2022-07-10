@@ -3,6 +3,7 @@ import CreateVehicleValidator from 'App/Validators/CreateVehicleValidator'
 import UpdateVehicleValidator from 'App/Validators/UpdateVehicleValidator'
 import { IntVehicle } from 'App/Types/Vehicle'
 import Vehicle from 'App/Models/Vehicle'
+import UnauthorizedException from 'App/Exceptions/UnauthorizedException'
 
 export default class VehiclesController {
   // Create Vehicle
@@ -89,10 +90,14 @@ export default class VehiclesController {
   }
 
   // Edit Vehicle info
-  public async update({ params, request, response }: HttpContextContract) {
+  public async update({ params, request, response, auth }: HttpContextContract) {
     const vehicle: IntVehicle = await Vehicle.findOrFail(params.id)
 
     const validatedData = await request.validate(UpdateVehicleValidator)
+
+    if (auth.user?.id !== vehicle.userId) {
+      throw new UnauthorizedException('You can only edit your own vehicle listing')
+    }
 
     vehicle.merge(validatedData)
 
@@ -104,8 +109,12 @@ export default class VehiclesController {
   }
 
   // Delete Vehicle
-  public async destroy({ params, response }: HttpContextContract) {
+  public async destroy({ params, response, auth }: HttpContextContract) {
     const vehicle: IntVehicle = await Vehicle.findOrFail(params.id)
+
+    if (auth.user?.id !== vehicle.userId) {
+      throw new UnauthorizedException('You can only delete your own vehicle listing')
+    }
 
     await vehicle.delete()
 
