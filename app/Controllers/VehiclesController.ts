@@ -4,6 +4,7 @@ import UpdateVehicleValidator from 'App/Validators/UpdateVehicleValidator'
 import { IntVehicle } from 'App/Types/Vehicle'
 import Vehicle from 'App/Models/Vehicle'
 import UnauthorizedException from 'App/Exceptions/UnauthorizedException'
+import Database from '@ioc:Adonis/Lucid/Database'
 
 export default class VehiclesController {
   // Create Vehicle
@@ -19,8 +20,11 @@ export default class VehiclesController {
 
   // Get the list of vehicles
   public async index({ request, response }: HttpContextContract) {
+    // Pagination parameters
     const page = request.input('page', 1)
     const perPage = request.input('per_page', 10)
+
+    // Search terms
     const search = request.input('search')
     let searchTerms
 
@@ -28,11 +32,27 @@ export default class VehiclesController {
       searchTerms = search.trim().split(/\s+/)
     }
 
+    // Filter parameters
     const maxPrice = request.input('max_price')
     const minPrice = request.input('min_price')
     const brand = request.input('brand')
     const color = request.input('color')
     const year = request.input('year')
+
+    // If we pass a property we can get all unique values for it
+    const property = request.input('property')
+    if (property) {
+      const allProperties = await Database.from('vehicles').select(property)
+      let uniqueProperties = []
+
+      allProperties.forEach((item) => {
+        if (!uniqueProperties.includes(item[property] as never)) {
+          uniqueProperties.push(item[property] as never)
+        }
+      })
+
+      return response.ok({ data: uniqueProperties })
+    }
 
     // Query vehicles according to filter and/or search
     const vehicles: IntVehicle[] = await Vehicle.query()
