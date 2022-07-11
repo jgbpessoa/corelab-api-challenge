@@ -22,7 +22,7 @@ export default class VehiclesController {
   public async index({ request, response }: HttpContextContract) {
     // Pagination parameters
     const page = request.input('page', 1)
-    const perPage = request.input('per_page', 10)
+    const perPage = request.input('per_page', 50)
 
     // Search terms
     const search = request.input('search')
@@ -86,6 +86,7 @@ export default class VehiclesController {
         })
       })
       .preload('user')
+      .orderBy('created_at', 'desc')
       .paginate(page, perPage)
 
     return response.ok({ vehicles })
@@ -136,6 +137,10 @@ export default class VehiclesController {
       throw new UnauthorizedException('You can only delete your own vehicle listing')
     }
 
+    // Delete relationships from favorites
+    await Database.from('user_vehicle').where('vehicle_id', vehicle.id).delete()
+
+    // Delete data in Vehicles Table
     await vehicle.delete()
 
     return response.noContent()
