@@ -15,7 +15,7 @@ export default class VehiclesController {
 
     await vehicle?.load('user')
 
-    return response.created({ vehicle })
+    return response.created({ message: 'Vehicle successfully added!', vehicle })
   }
 
   // Get the list of vehicles
@@ -99,14 +99,14 @@ export default class VehiclesController {
       .preload('user')
       .firstOrFail()
 
-    return response.ok({ data: vehicle })
+    return response.ok({ vehicle })
   }
 
   // Show vehicles of a specific User
   public async user({ response, auth }: HttpContextContract) {
     if (auth.user?.id) {
       const vehicles: IntVehicle[] = await Vehicle.query().where('user_id', auth.user?.id)
-      return response.ok({ data: vehicles })
+      return response.ok({ vehicles })
     }
   }
 
@@ -126,7 +126,7 @@ export default class VehiclesController {
 
     await vehicle.load('user')
 
-    return response.ok({ data: vehicle })
+    return response.ok({ message: 'Vehicle successfully updated!', vehicle })
   }
 
   // Delete Vehicle

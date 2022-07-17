@@ -10,7 +10,10 @@ export default class AuthController {
 
     const token = await await auth.login(user)
 
-    return response.ok({ message: 'User successfully registered', data: { token, user } })
+    return response.ok({
+      message: 'User successfully registered',
+      user: { token: token.token, data: { id: user.id, name: user.name, email: user.email } },
+    })
   }
 
   public async login({ request, response, auth }: HttpContextContract) {
@@ -20,7 +23,12 @@ export default class AuthController {
       const token = await auth.attempt(email, password)
       const user = auth.user?.$attributes
 
-      return response.ok({ message: 'User successfully logged in', data: { token, user } })
+      if (user) {
+        return response.ok({
+          message: 'User successfully logged in',
+          user: { token: token.token, data: { id: user.id, name: user.name, email: user.email } },
+        })
+      }
     } catch (error) {
       return response.badRequest({ message: "We couldn't verify your credentials" })
     }

@@ -6,13 +6,13 @@ export default class FavoritesController {
     const id = request.input('id')
     const vehicle = await Vehicle.query().where('id', id).preload('user').firstOrFail()
     await auth.user?.related('favorites').attach([vehicle.id])
-    return response.created({ message: 'Vehicle listing set as favorite', data: vehicle })
+    return response.created({ message: 'Vehicle listing set as favorite', vehicle })
   }
 
   public async index({ response, auth }: HttpContextContract) {
     const favorites = await auth.user?.related('favorites').query()
 
-    return response.ok({ data: favorites })
+    return response.ok({ favorites })
   }
 
   public async destroy({ params, response, auth }: HttpContextContract) {
