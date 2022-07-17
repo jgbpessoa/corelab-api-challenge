@@ -10,5 +10,5 @@ export default class RegisterValidator {
     password: schema.string(),
   })
 
-  public messages = {}
+  public messages = { 'email.unique': 'User already registered!' }
 }
